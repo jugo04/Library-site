@@ -1,8 +1,7 @@
 venv/
 *.pyc
 __pycache__/
-file_book/
-media/
+files/
 db.sqlite3
 .vscode/
 .idea/

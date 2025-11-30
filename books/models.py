@@ -7,7 +7,7 @@ class Books(models.Model):
     genre = models.CharField(max_length=100)
     year = models.PositiveIntegerField()
     description = models.TextField()
-    file = models.FileField(upload_to='file_book/')
+    file = models.FileField(upload_to='books_pdf/')
 
     class Meta:
         ordering = ('name',)

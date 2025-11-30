@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ book.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        A {
+            text-decoration: none;
+            color: White;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23654321" width="1200" height="800"/><path fill="%23543210" d="M0 0h50v800H0z M100 0h50v800h-50z M200 0h50v800h-50z"/></svg>');
+            background-size: cover;
+            background-attachment: fixed;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #654321;
+            text-decoration: none;
+        }
+
+        .logo-circles {
+            display: flex;
+            gap: 3px;
+        }
+
+        .logo-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #654321;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: normal;
+        }
+
+        .back-btn {
+            background: #654321;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn:hover {
+            background: #543210;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .book-detail {
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .book-header {
+            display: flex;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .book-cover-large {
+            flex-shrink: 0;
+            width: 300px;
+            aspect-ratio: 2/3;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            overflow: hidden;
+        }
+
+        .book-cover-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .book-info-section {
+            flex: 1;
+        }
+
+        .book-title-main {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .book-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .meta-label {
+            font-weight: bold;
+            color: #654321;
+            min-width: 80px;
+        }
+
+        .meta-value {
+            color: #555;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #4A90E2;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #357ABD;
+        }
+
+        .btn-secondary {
+            background: #654321;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #543210;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #654321;
+            border: 2px solid #654321;
+        }
+
+        .btn-outline:hover {
+            background: #654321;
+            color: white;
+        }
+
+        .description-section {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #654321;
+            margin-bottom: 1rem;
+        }
+
+        .description-text {
+            line-height: 1.8;
+            color: #444;
+            text-align: justify;
+        }
+
+        @media (max-width: 768px) {
+            .book-header {
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: center;
+            }
+
+            .book-cover-large {
+                width: 250px;
+            }
+
+            .book-title-main {
+                font-size: 1.5rem;
+                text-align: center;
+            }
+
+            .book-info-section {
+                width: 100%;
+            }
+
+            .book-detail {
+                padding: 1.5rem;
+            }
+
+            main {
+                padding: 0 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .meta-item {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+
+            .meta-label {
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .book-cover-large {
+                width: 200px;
+            }
+
+            header {
+                padding: 1rem;
+            }
+
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="{% url 'library' %}" class="logo">
+                <div class="logo-circles">
+                    <div class="logo-circle">L</div>
+                    <div class="logo-circle">I</div>
+                    <div class="logo-circle">B</div>
+                    <div class="logo-circle">R</div>
+                    <div class="logo-circle">A</div>
+                    <div class="logo-circle">R</div>
+                    <div class="logo-circle">Y</div>
+                </div>
+            </a>
+            
+            <a href="{% url 'library' %}" class="back-btn" onclick="goBack()">
+                ← Повернутися до всіх книг
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="book-detail">
+            <div class="book-header">
+                <div class="book-cover-large">
+                    <img src="{{ book.cover.url }}" alt="Обкладинка" width="200">
+                </div>
+
+                <div class="book-info-section">
+                    <h1 class="book-title-main" id="bookTitle">{{ book.name }}</h1>
+
+                    <div class="book-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Автор:</span>
+                            <span class="meta-value" id="bookAuthor">{{ book.author }}</span>
+                        </div>
+
+                        <div class="meta-item">
+                            <span class="meta-label">Жанр:</span>
+                            <span class="meta-value" id="bookGenre">{{ book.genre }}</span>
+                        </div>
+
+                        <div class="meta-item">
+                            <span class="meta-label">Рік:</span>
+                            <span class="meta-value" id="bookYear">{{ book.year }}</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="readOnline()">
+                            <a href="{{ book.file.url }}" target="_blank">📖 Читати онлайн</a>
+                        </button>
+                        <button class="btn btn-secondary" onclick="downloadBook()">
+                            ⬇️ Завантажити
+                        </button>
+                        <button class="btn btn-outline" onclick="saveToLibrary()">
+                            🔖 Додати в збережене
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="description-section">
+                <h2 class="section-title">Опис:</h2>
+                <p class="description-text" id="bookDescription">
+                    {{ book.description }}
+                </p>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
