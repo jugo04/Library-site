@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Бібліотека</title>
     <style>
+        html {
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Кастомний скролбар для Webkit (Chrome, Safari) */
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.5); /* Темніший фон */
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background: rgba(50, 50, 50, 0.9); /* Темно-сірий */
+            border-radius: 10px;
+        }
+
+        html::-webkit-scrollbar-thumb:hover {
+            background: rgba(30, 30, 30, 1); /* Майже чорний */
+        }
+
+        html {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(101, 67, 33, 0.5) transparent;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,11 +41,13 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23654321" width="1200" height="800"/><path fill="%23543210" d="M0 0h50v800H0z M100 0h50v800h-50z M200 0h50v800h-50z"/></svg>');
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                        url(/files/media/background.jpg);
             background-size: cover;
             background-attachment: fixed;
             color: #333;
+            overflow-x: hidden;
+            min-height: 100vh;
         }
 
         header {
@@ -121,11 +151,13 @@
 
         main {
             max-width: 1400px;
+            width: 100%;
             margin: 2rem auto;
             padding: 0 2rem;
         }
 
         .books-grid {
+            max-width: 100%;
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 2rem;
@@ -279,7 +311,7 @@
             </div>
 
             <nav id="nav">
-                <a href="#genres">
+                <a href="{% url 'genres' %}">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="7" height="7"/>
                         <rect x="14" y="3" width="7" height="7"/>
@@ -288,7 +320,7 @@
                     </svg>
                     <span>Жанри</span>
                 </a>
-                <a href="#authors">
+                <a href="{% url 'authors' %}">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
@@ -397,6 +429,5 @@
         // Завантажуємо книги
         loadBooks(books);
     </script>
-</body>
 </body>
 </html>

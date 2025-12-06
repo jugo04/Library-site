@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ book.name }}</title>
     <style>
+        html {
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* Кастомний скролбар для Webkit (Chrome, Safari) */
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.5); /* Темніший фон */
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background: rgba(50, 50, 50, 0.9); /* Темно-сірий */
+            border-radius: 10px;
+        }
+
+        html::-webkit-scrollbar-thumb:hover {
+            background: rgba(30, 30, 30, 1); /* Майже чорний */
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(101, 67, 33, 0.5) transparent;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -14,14 +42,16 @@
             text-decoration: none;
             color: White;
         }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><rect fill="%23654321" width="1200" height="800"/><path fill="%23543210" d="M0 0h50v800H0z M100 0h50v800h-50z M200 0h50v800h-50z"/></svg>');
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                        url(/files/media/background.jpg);
             background-size: cover;
             background-attachment: fixed;
             color: #333;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         header {
@@ -89,6 +119,7 @@
 
         main {
             max-width: 1200px;
+            width: 100%;
             margin: 2rem auto;
             padding: 0 2rem;
         }
@@ -328,10 +359,18 @@
                             <span class="meta-value" id="bookAuthor">{{ book.author }}</span>
                         </div>
 
-                        <div class="meta-item">
+                       <div class="meta-item">
                             <span class="meta-label">Жанр:</span>
-                            <span class="meta-value" id="bookGenre">{{ book.genre }}</span>
-                        </div>
+                            <span class="meta-value" id="bookGenre">
+                                {% if book.genre.all %}
+                                    {% for g in book.genre.all %}
+                                        {{ g.genre }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    Жанр не вказаний
+                                {% endif %}
+                            </span>
+                       </div>
 
                         <div class="meta-item">
                             <span class="meta-label">Рік:</span>
@@ -340,12 +379,12 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="readOnline()">
-                            <a href="{{ book.file.url }}" target="_blank">📖 Читати онлайн</a>
-                        </button>
-                        <button class="btn btn-secondary" onclick="downloadBook()">
+                        <a href="{{ book.file.url }}" target="_blank" class="btn btn-primary">
+                            📖 Читати онлайн
+                        </a>
+                        <a href="{{ book.file.url }}" download class="btn btn-secondary">
                             ⬇️ Завантажити
-                        </button>
+                        </a>
                         <button class="btn btn-outline" onclick="saveToLibrary()">
                             🔖 Додати в збережене
                         </button>
