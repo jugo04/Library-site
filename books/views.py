@@ -1,18 +1,18 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from rest_framework import generics
 from .models import Books, Authors, Genre
+from .serializer import LibrarySerializer, AuthorsSerializer, GenresSerializer
 
-def library(request):
-    books = Books.objects.all().order_by('-name')
-    return render(request, 'library/library_website.html', {'books': books})
+#Відображення списку книг на головній сторінці
+class LibraryAPIView(generics.ListAPIView):
+    queryset = Books.objects.all()
+    serializer_class = LibrarySerializer
 
-def book(request, book_id):
-    book = get_object_or_404(Books, id = book_id)
-    return render(request, 'library/book_detail_page.html', {'book': book})
+#Відображення списку авторів в розділі "Автори"
+class AuthorsAPIView(generics.ListAPIView):
+    queryset = Authors.objects.all()
+    serializer_class = AuthorsSerializer
 
-def authors(request):
-    authors = Authors.objects.all().order_by('-name')
-    return render(request, 'library/authors.html', {'authors': authors})
-
-def genres(request):
-    genres = Genre.objects.all().order_by('-genre')
-    return render(request, 'library/genres.html', {'genres': genres})
+#Список жанрів відображений в розділі "Жанри"
+class GenresAPIView(generics.ListAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenresSerializer

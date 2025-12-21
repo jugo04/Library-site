@@ -1,6 +1,6 @@
 from django.db import models
 
-
+#Модель для жанрів з параметром "назва жанру"
 class Genre(models.Model):
     genre = models.CharField(max_length=100, db_index=True)
 
@@ -13,6 +13,7 @@ class Genre(models.Model):
         return self.genre
 
 
+#Модель для авторів з параметрами: ім`я, фото, біографія
 class Authors(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     photo = models.ImageField(upload_to='author_photo/', blank=True, null=True)
@@ -26,6 +27,9 @@ class Authors(models.Model):
     def __str__(self):
         return self.name
 
+
+#Модель з параметрами книги: назва, обкладинка, ім`я автора з попередньої моделі, жанр з попередньої моделі,
+#рік випуску, опис та пдф файл з самою книгою
 class Books(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     cover = models.ImageField(upload_to='cover/', blank=True, null=True)
