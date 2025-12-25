@@ -1,6 +1,12 @@
 from rest_framework import generics
 from .models import Books, Authors, Genre
-from .serializer import LibrarySerializer, AuthorsSerializer, GenresSerializer
+from .serializer import (
+    LibrarySerializer,
+    AuthorsSerializer,
+    GenresSerializer,
+    BookDetailSerializer,
+    AuthorDetailSerializer
+    )
 
 #Відображення списку книг на головній сторінці
 class LibraryAPIView(generics.ListAPIView):
@@ -16,3 +22,13 @@ class AuthorsAPIView(generics.ListAPIView):
 class GenresAPIView(generics.ListAPIView):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
+
+#Відображення деталей конкретної книги
+class BookDetailAPIView(generics.RetrieveAPIView):
+    queryset = Books.objects.all()
+    serializer_class = BookDetailSerializer
+
+#Відображення деталей конкретного автора
+class AuthorDetailAPIView(generics.RetrieveAPIView):
+    queryset = Authors.objects.all()
+    serializer_class = AuthorDetailSerializer

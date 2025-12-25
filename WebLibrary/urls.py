@@ -18,12 +18,15 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
-from books.views import LibraryAPIView, AuthorsAPIView, GenresAPIView
+from books.views import LibraryAPIView, AuthorsAPIView, GenresAPIView, BookDetailAPIView, AuthorDetailAPIView
 
 urlpatterns = [
     path('api/library', LibraryAPIView.as_view()),
     path('api/Authors', AuthorsAPIView.as_view()),
     path('api/Genres', GenresAPIView.as_view()),
+    path('api/Book', GenresAPIView.as_view()),
+    path("books/<int:pk>/", BookDetailAPIView.as_view(), name="book-detail"),
+    path("author/<int:pk>/", AuthorDetailAPIView.as_view(), name="author-detail"),
     path('admin/', admin.site.urls),
 ]
 
