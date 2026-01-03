@@ -25,17 +25,9 @@ class BookDetailSerializer(serializers.ModelSerializer):
         model = Books
         fields = ('__all__')
 
-
+#Деталі автора:
 class AuthorDetailSerializer(serializers.ModelSerializer):
     books_by_author = LibrarySerializer(many=True, read_only=True)
     class Meta:
         model = Authors
         fields = ('id', 'name', 'photo', 'biography', 'books_by_author')
-
-#Необхідно додати:
-#Відобаження деталей книги. +
-#Деталі автора зі списком книг які він випустив. +
-#Реалізувати пошук, та список книг при виборі жанру.
-#ОнлайнРідер
-#Авторизація та після цього реалізувати можливість обирати улюблені книги.
-#відображення улюблених книг.

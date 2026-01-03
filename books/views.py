@@ -1,34 +1,29 @@
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from .models import Books, Authors, Genre
-from .serializer import (
-    LibrarySerializer,
-    AuthorsSerializer,
-    GenresSerializer,
-    BookDetailSerializer,
-    AuthorDetailSerializer
-    )
+from django_filters.rest_framework import DjangoFilterBackend
+from .serializer import *
 
-#Відображення списку книг на головній сторінці
-class LibraryAPIView(generics.ListAPIView):
+#Відображення списку книг на головній сторінці, деталі конкретної книги та список книг залежно від жанру
+class LibraryModelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Books.objects.all()
-    serializer_class = LibrarySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['genre']
 
-#Відображення списку авторів в розділі "Автори"
-class AuthorsAPIView(generics.ListAPIView):
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return BookDetailSerializer
+        return LibrarySerializer
+
+#Відображення списку авторів в розділі "Автори" та деталі конкретного автора.
+class AuthorsModelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Authors.objects.all()
-    serializer_class = AuthorsSerializer
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return AuthorDetailSerializer
+        return AuthorsSerializer
 
 #Список жанрів відображений в розділі "Жанри"
 class GenresAPIView(generics.ListAPIView):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
-
-#Відображення деталей конкретної книги
-class BookDetailAPIView(generics.RetrieveAPIView):
-    queryset = Books.objects.all()
-    serializer_class = BookDetailSerializer
-
-#Відображення деталей конкретного автора
-class AuthorDetailAPIView(generics.RetrieveAPIView):
-    queryset = Authors.objects.all()
-    serializer_class = AuthorDetailSerializer
