@@ -1,4 +1,6 @@
 from django.db import models
+from django.conf import settings
+
 
 #Модель для жанрів з параметром "назва жанру"
 class Genre(models.Model):
@@ -46,3 +48,16 @@ class Books(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class BookStatus(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    book = models.ForeignKey(Books, on_delete= models.CASCADE)
+
+    is_favorite = models.BooleanField(default=False)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'book')
+        verbose_name = "Статус книги"
+        verbose_name_plural = "Статус книги"
