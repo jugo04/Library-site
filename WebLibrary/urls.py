@@ -24,13 +24,14 @@ from books.views import *
 router = DefaultRouter()
 router.register(r'library', LibraryModelViewSet)
 router.register(r'authors', AuthorsModelViewSet)
+router.register(r'favorite', FavoriteBooksModelViewSet, basename='favorite')
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('api/genres/', GenresAPIView.as_view()),
     path('api/', include(router.urls)),
     re_path(r'^auth/', include('djoser.urls')),
     re_path(r'^auth/', include('djoser.urls.authtoken')),
-    path('admin/', admin.site.urls),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

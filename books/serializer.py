@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Books, Authors, Genre
+from .models import *
 
 #Задаємо поля для файлу JSON з відображенням параметрів книги
 class LibrarySerializer(serializers.ModelSerializer):
@@ -31,3 +31,9 @@ class AuthorDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Authors
         fields = ('id', 'name', 'photo', 'biography', 'books_by_author')
+
+class FavoriteBookSerializer(serializers.ModelSerializer):
+    book = LibrarySerializer(read_only=True)
+    class Meta:
+        model = BookStatus
+        fields = ('book',)
