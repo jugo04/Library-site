@@ -1,3 +1,4 @@
+from django.db.models import BooleanField
 from rest_framework import serializers
 from .models import *
 
@@ -32,8 +33,13 @@ class AuthorDetailSerializer(serializers.ModelSerializer):
         model = Authors
         fields = ('id', 'name', 'photo', 'biography', 'books_by_author')
 
-class FavoriteBookSerializer(serializers.ModelSerializer):
+
+class FavoriteAndReadedBookSerializer(serializers.ModelSerializer):
     book = LibrarySerializer(read_only=True)
     class Meta:
         model = BookStatus
         fields = ('book',)
+
+class BookInteractSerializer(serializers.Serializer):
+    like = serializers.BooleanField(required=False)
+    read = serializers.BooleanField(required=False)

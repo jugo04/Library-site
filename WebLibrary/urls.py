@@ -25,6 +25,7 @@ router = DefaultRouter()
 router.register(r'library', LibraryModelViewSet)
 router.register(r'authors', AuthorsModelViewSet)
 router.register(r'favorite', FavoriteBooksModelViewSet, basename='favorite')
+router.register(r'readed', ReadedBooksModelViewSet, basename='readed')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
