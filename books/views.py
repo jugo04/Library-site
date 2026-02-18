@@ -3,9 +3,12 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from .models import *
 from rest_framework import generics, viewsets
+from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializer import *
+from django.contrib.postgres.search import TrigramSimilarity
+from django.db.models import Q
 
 
 #Клас для пагінації сторінок
@@ -90,3 +93,62 @@ class ReadedBooksModelViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = FavoriteAndReadedBookSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = LibraryApiListPagination
+
+#Реалізація пошуку, шукати можна авторів та книги залежно від типу пошуку (type = ??)
+class SearchingAPIView(APIView):
+    permission_classes = [AllowAny]
+    pagination_class = LibraryApiListPagination
+    def get(self, request):
+        query = request.GET.get('q', '').strip()
+        query_type = request.GET.get('type', '')
+
+        if not query:
+            return Response([])
+
+        queryset = self.get_query(query_type)
+
+        if queryset is None:
+            return Response({'Error': 'Invalid search type'}, status=400)
+
+        serializer_class = self.get_serializer(query_type)
+        result = self.searching(query, queryset)
+
+        serializer = serializer_class(result, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    def get_query(self, query_type):
+        if query_type == "author":
+            queryset = Authors.objects.all()
+            return queryset
+        elif query_type == "books":
+            queryset = Books.objects.all()
+            return queryset
+        return None
+
+    def get_serializer(self, query_type):
+        if query_type == "author":
+            serializer = AuthorsSerializer
+            return serializer
+        elif query_type == "books":
+            serializer = LibrarySerializer
+            return serializer
+        return None
+
+    def searching(self, query, queryset):
+        if len(query) < 3:
+            return queryset.filter(name__icontains=query)
+
+        words = query.split()
+
+        q_objects = Q()
+        for word in words:
+            q_objects |= Q(name__icontains=word)
+            q_objects |= Q(name__trigram_similar=word)
+
+        queryset = queryset.filter(q_objects).distinct()
+
+        queryset = queryset.annotate(
+            similarity=TrigramSimilarity("name", query)
+        ).order_by("-similarity")
+
+        return queryset
