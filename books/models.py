@@ -16,9 +16,11 @@ class Genre(models.Model):
 
 
 #Модель для авторів з параметрами: ім`я, фото, біографія
-class Authors(models.Model):
+class Author(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     photo = models.ImageField(upload_to='author_photo/', blank=True, null=True)
+    birth_year = models.PositiveIntegerField()
+    birth_place = models.TextField(max_length=100)
     biography = models.TextField()
 
     class Meta:
@@ -32,10 +34,10 @@ class Authors(models.Model):
 
 #Модель з параметрами книги: назва, обкладинка, ім`я автора з попередньої моделі, жанр з попередньої моделі,
 #рік випуску, опис та пдф файл з самою книгою
-class Books(models.Model):
+class Book(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     cover = models.ImageField(upload_to='cover/', blank=True, null=True)
-    author = models.ForeignKey(Authors, related_name='books_by_author', on_delete=models.CASCADE)
+    author = models.ForeignKey(Author, related_name='books_by_author', on_delete=models.CASCADE)
     genre = models.ManyToManyField(Genre, related_name='books_by_genre')
     year = models.PositiveIntegerField()
     description = models.TextField()
@@ -52,7 +54,7 @@ class Books(models.Model):
 
 class BookStatus(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    book = models.ForeignKey(Books, on_delete= models.CASCADE)
+    book = models.ForeignKey(Book, on_delete= models.CASCADE)
 
     is_favorite = models.BooleanField(default=False)
     is_read = models.BooleanField(default=False)

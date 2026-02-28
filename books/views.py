@@ -21,7 +21,7 @@ class LibraryApiListPagination(PageNumberPagination):
 #Відображення списку книг на головній сторінці, деталі конкретної книги та список книг залежно від жанру
 #Декоратор action для того, щоб обирати улюблену книгу авторизованому користувачу
 class LibraryModelViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Books.objects.all()
+    queryset = Book.objects.all()
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['genre']
     permission_classes = [AllowAny]
@@ -56,7 +56,7 @@ class LibraryModelViewSet(viewsets.ReadOnlyModelViewSet):
 
 #Відображення списку авторів в розділі "Автори" та деталі конкретного автора.
 class AuthorsModelViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Authors.objects.all()
+    queryset = Author.objects.all()
     permission_classes = [AllowAny]
     pagination_class = LibraryApiListPagination
 
@@ -122,10 +122,10 @@ class SearchingAPIView(APIView):
 
     def get_query(self, query_type):
         if query_type == "author":
-            queryset = Authors.objects.all()
+            queryset = Author.objects.all()
             return queryset
         elif query_type == "books":
-            queryset = Books.objects.all()
+            queryset = Book.objects.all()
             return queryset
         return None
 

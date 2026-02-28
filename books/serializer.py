@@ -4,14 +4,14 @@ from .models import *
 
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Authors
+        model = Author
         fields = ["id", "name"]
 
 #Задаємо поля для файлу JSON з відображенням параметрів книги
 class LibrarySerializer(serializers.ModelSerializer):
     genres = serializers.SerializerMethodField()
     class Meta:
-        model = Books
+        model = Book
         fields = ('id', 'cover', 'name', 'genres')
 
     def get_genres(self, obj):
@@ -21,7 +21,7 @@ class LibrarySerializer(serializers.ModelSerializer):
 class AuthorsSerializer(serializers.ModelSerializer):
     books_count = serializers.SerializerMethodField()
     class Meta:
-        model = Authors
+        model = Author
         fields = ('id', 'photo', 'name', 'books_count')
 
     def get_books_count(self, obj):
@@ -38,15 +38,15 @@ class BookDetailSerializer(serializers.ModelSerializer):
     author = AuthorSerializer()
     genre = serializers.StringRelatedField(many=True)
     class Meta:
-        model = Books
+        model = Book
         fields = ('__all__')
 
 #Деталі автора:
 class AuthorDetailSerializer(serializers.ModelSerializer):
     books_by_author = LibrarySerializer(many=True, read_only=True)
     class Meta:
-        model = Authors
-        fields = ('id', 'name', 'photo', 'biography', 'books_by_author')
+        model = Author
+        fields = ('id', 'name', 'photo', 'biography', 'books_by_author', 'birth_year', 'birth_place')
 
 
 class FavoriteAndReadedBookSerializer(serializers.ModelSerializer):
