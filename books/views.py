@@ -17,6 +17,7 @@ class LibraryApiListPagination(PageNumberPagination):
     page_query_param = 'page_size'
     max_page_size = 200
 
+
 #Відображення списку книг на головній сторінці, деталі конкретної книги та список книг залежно від жанру
 #Декоратор action для того, щоб обирати улюблену книгу авторизованому користувачу
 class LibraryModelViewSet(viewsets.ReadOnlyModelViewSet):
@@ -64,12 +65,14 @@ class AuthorsModelViewSet(viewsets.ReadOnlyModelViewSet):
             return AuthorDetailSerializer
         return AuthorsSerializer
 
+
 #Список жанрів відображений в розділі "Жанри"
 class GenresAPIView(generics.ListAPIView):
     queryset = Genre.objects.all()
     serializer_class = GenresSerializer
     permission_classes = [AllowAny]
     pagination_class = LibraryApiListPagination
+
 
 #Список улюблених книг користувача
 class FavoriteBooksModelViewSet(viewsets.ReadOnlyModelViewSet):
@@ -93,6 +96,7 @@ class ReadedBooksModelViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = FavoriteAndReadedBookSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = LibraryApiListPagination
+
 
 #Реалізація пошуку, шукати можна авторів та книги залежно від типу пошуку (type = ??)
 class SearchingAPIView(APIView):

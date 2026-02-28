@@ -2,26 +2,41 @@ from django.db.models import BooleanField
 from rest_framework import serializers
 from .models import *
 
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Authors
+        fields = ["id", "name"]
+
 #Задаємо поля для файлу JSON з відображенням параметрів книги
 class LibrarySerializer(serializers.ModelSerializer):
+    genres = serializers.SerializerMethodField()
     class Meta:
         model = Books
-        fields = ('id', 'cover', 'name', 'genre')
+        fields = ('id', 'cover', 'name', 'genres')
+
+    def get_genres(self, obj):
+        return ', '.join([genre.genre for genre in obj.genre.all()])
 
 #Задаємо поля для файлу JSON з відображенням параметрів автора
 class AuthorsSerializer(serializers.ModelSerializer):
+    books_count = serializers.SerializerMethodField()
     class Meta:
         model = Authors
-        fields = ('id', 'photo', 'name')
+        fields = ('id', 'photo', 'name', 'books_count')
+
+    def get_books_count(self, obj):
+        return obj.books_by_author.count()
 
 #Задаємо поля для файлу JSON з відображенням жанру
 class GenresSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('genre',)
+        fields = ('id', 'genre',)
 
 #Деталі книги
 class BookDetailSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer()
+    genre = serializers.StringRelatedField(many=True)
     class Meta:
         model = Books
         fields = ('__all__')
