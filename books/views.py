@@ -20,7 +20,7 @@ class LibraryApiListPagination(PageNumberPagination):
 
 #Відображення списку книг на головній сторінці, деталі конкретної книги та список книг залежно від жанру
 #Декоратор action для того, щоб обирати улюблену книгу авторизованому користувачу
-class LibraryModelViewSet(viewsets.ReadOnlyModelViewSet):
+class BookModelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Book.objects.all()
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['genre']
@@ -30,15 +30,14 @@ class LibraryModelViewSet(viewsets.ReadOnlyModelViewSet):
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return BookDetailSerializer
-        return LibrarySerializer
+        return BookSerializer
 
     @action(detail = True, methods = ['post'], permission_classes = [IsAuthenticated])
     def interact(self, request, pk=None):
         serializer = BookInteractSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        book = self.get_object()
-        user_book, created = BookStatus.objects.get_or_create(user=request.user, book=book)
+        user_book, created = BookStatus.objects.get_or_create(user=request.user, book=self.get_object())
 
         if 'like' in data:
             user_book.is_favorite = data['like']
@@ -48,14 +47,14 @@ class LibraryModelViewSet(viewsets.ReadOnlyModelViewSet):
         user_book.save()
 
         return Response({
-            'book': book.name,
+            'book': user_book.book.name,
             'like': user_book.is_favorite,
             'read': user_book.is_read
         })
 
 
 #Відображення списку авторів в розділі "Автори" та деталі конкретного автора.
-class AuthorsModelViewSet(viewsets.ReadOnlyModelViewSet):
+class AuthorModelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Author.objects.all()
     permission_classes = [AllowAny]
     pagination_class = LibraryApiListPagination
@@ -67,9 +66,9 @@ class AuthorsModelViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 #Список жанрів відображений в розділі "Жанри"
-class GenresAPIView(generics.ListAPIView):
+class GenreAPIView(generics.ListAPIView):
     queryset = Genre.objects.all()
-    serializer_class = GenresSerializer
+    serializer_class = GenreSerializer
     permission_classes = [AllowAny]
     pagination_class = LibraryApiListPagination
 
@@ -134,7 +133,7 @@ class SearchingAPIView(APIView):
             serializer = AuthorsSerializer
             return serializer
         elif query_type == "books":
-            serializer = LibrarySerializer
+            serializer = BookSerializer
             return serializer
         return None
 

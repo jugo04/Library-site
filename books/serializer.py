@@ -8,7 +8,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 #Задаємо поля для файлу JSON з відображенням параметрів книги
-class LibrarySerializer(serializers.ModelSerializer):
+class BookSerializer(serializers.ModelSerializer):
     genres = serializers.SerializerMethodField()
     class Meta:
         model = Book
@@ -28,10 +28,10 @@ class AuthorsSerializer(serializers.ModelSerializer):
         return obj.books_by_author.count()
 
 #Задаємо поля для файлу JSON з відображенням жанру
-class GenresSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ('id', 'genre',)
+        fields = ('id', 'name',)
 
 #Деталі книги
 class BookDetailSerializer(serializers.ModelSerializer):
@@ -43,14 +43,14 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
 #Деталі автора:
 class AuthorDetailSerializer(serializers.ModelSerializer):
-    books_by_author = LibrarySerializer(many=True, read_only=True)
+    books_by_author = BookSerializer(many=True, read_only=True)
     class Meta:
         model = Author
         fields = ('id', 'name', 'photo', 'biography', 'books_by_author', 'birth_year', 'birth_place')
 
 
 class FavoriteAndReadedBookSerializer(serializers.ModelSerializer):
-    book = LibrarySerializer(read_only=True)
+    book = BookSerializer(read_only=True)
     class Meta:
         model = BookStatus
         fields = ('book',)

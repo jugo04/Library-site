@@ -22,14 +22,14 @@ from rest_framework.routers import DefaultRouter
 from books.views import *
 
 router = DefaultRouter()
-router.register(r'library', LibraryModelViewSet)
-router.register(r'authors', AuthorsModelViewSet)
+router.register(r'library', BookModelViewSet)
+router.register(r'authors', AuthorModelViewSet)
 router.register(r'favorite', FavoriteBooksModelViewSet, basename='favorite')
 router.register(r'readed', ReadedBooksModelViewSet, basename='readed')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/genres/', GenresAPIView.as_view()),
+    path('api/genres/', GenreAPIView.as_view()),
     path('api/', include(router.urls)),
     re_path(r'^auth/', include('djoser.urls')),
     re_path(r'^auth/', include('djoser.urls.authtoken')),
