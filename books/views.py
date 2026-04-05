@@ -53,6 +53,17 @@ class BookModelViewSet(viewsets.ReadOnlyModelViewSet):
         })
 
 
+class SeriesModelViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Series.objects.all()
+    permission_classes = [AllowAny]
+    pagination_class = LibraryApiListPagination
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return SeriesDetailSerializer
+        return SeriesSerializer
+
+
 #Відображення списку авторів в розділі "Автори" та деталі конкретного автора.
 class AuthorModelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Author.objects.all()
@@ -100,7 +111,6 @@ class ReadedBooksModelViewSet(viewsets.ReadOnlyModelViewSet):
 #Реалізація пошуку, шукати можна авторів та книги залежно від типу пошуку (type = ??)
 class SearchingAPIView(APIView):
     permission_classes = [AllowAny]
-    pagination_class = LibraryApiListPagination
     def get(self, request):
         query = request.GET.get('q', '').strip()
         query_type = request.GET.get('type', '')
@@ -116,8 +126,11 @@ class SearchingAPIView(APIView):
         serializer_class = self.get_serializer(query_type)
         result = self.searching(query, queryset)
 
-        serializer = serializer_class(result, many=True, context={'request': request})
-        return Response(serializer.data)
+        paginator = LibraryApiListPagination()
+        page = paginator.paginate_queryset(result, request)
+
+        serializer = serializer_class(page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
 
     def get_query(self, query_type):
         if query_type == "author":

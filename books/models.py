@@ -72,8 +72,8 @@ class Book(models.Model):
         Series, related_name='books_by_series', null=True, blank=True, on_delete=models.SET_NULL)
 
     cover = models.ImageField(upload_to='cover/', blank=True, null=True)
-    author = models.ForeignKey(
-        Author, related_name='books_by_author', on_delete=models.CASCADE) #Потрібно буде замінити на ManyToMany
+    author = models.ManyToManyField(
+        Author, related_name='books_by_author')
 
     genre = models.ManyToManyField(
         Genre, related_name='books_by_genre')
