@@ -2,13 +2,15 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import Avg, Count
+from django.db.models.functions import Coalesce
 
 
 #Базова модель User, має лише базові параметри, можна буде в подальшому налаштовувати.
 #Треба додати необхідні поля для профілю
 class User(AbstractUser):
     photo = models.ImageField(upload_to='user_avatar/', blank=True, null=True)
-    birth_date = models.DateField()
+    birth_date = models.DateField( blank=True, null=True)
     biography = models.CharField(max_length=300, blank=True, null=True)
 
 
@@ -29,9 +31,9 @@ class Genre(models.Model):
 class Author(models.Model):
     name = models.CharField(max_length=100, db_index=True)
     photo = models.ImageField(upload_to='author_photo/', blank=True, null=True)
-    birth_year = models.PositiveIntegerField()
-    birth_place = models.TextField(max_length=100)
-    biography = models.TextField()
+    birth_year = models.PositiveIntegerField(blank=True, null=True)
+    birth_place = models.TextField(max_length=100, blank=True, null=True)
+    biography = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ('name',)
@@ -87,6 +89,17 @@ class Book(models.Model):
         default=AgeCategory.ALL
     )
 
+    @classmethod
+    def get_with_rating(cls):
+        return cls.objects.annotate(
+            avg=Avg('bookstatus__rating'),
+            count=Count('bookstatus__rating'),
+            weighted=(
+                (Coalesce(Count(
+                    'bookstatus__rating'), 0) * Coalesce(Avg('bookstatus__rating'), 0.0)) + (10 * 3.0)
+            ) / (Coalesce(Count('bookstatus__rating'), 0) + 10)
+        ).order_by('-weighted')
+
     class Meta:
         ordering = ('name',)
         verbose_name = "Книга"
@@ -126,6 +139,7 @@ class Review(models.Model):
         return f"{self.user} - {self.book}"
 
     class Meta:
+        unique_together = ('user', 'book')
         ordering = ('-created_at',)
         verbose_name = "Відгук"
         verbose_name_plural = "Відгуки"
@@ -133,6 +147,7 @@ class Review(models.Model):
 
 #Досягнення користувачів
 class Achievement(models.Model):
+    icon = models.ImageField(upload_to='achiev_icon/')
     name = models.CharField(max_length=100, db_index=True)
     description = models.TextField()
 

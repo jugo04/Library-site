@@ -8,7 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializer import *
 from django.contrib.postgres.search import TrigramSimilarity
-from django.db.models import Q
+from django.db.models import Q, Avg, Count
 
 
 #Клас для пагінації сторінок
@@ -20,8 +20,9 @@ class LibraryApiListPagination(PageNumberPagination):
 
 #Відображення списку книг на головній сторінці, деталі конкретної книги та список книг залежно від жанру
 #Декоратор action для того, щоб обирати улюблену книгу авторизованому користувачу
+#Інший декоратор для створення та перегляду відгуків
 class BookModelViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Book.objects.all()
+    queryset = Book.get_with_rating()
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['genre']
     permission_classes = [AllowAny]
@@ -43,14 +44,38 @@ class BookModelViewSet(viewsets.ReadOnlyModelViewSet):
             user_book.is_favorite = data['like']
         if 'read' in data:
             user_book.is_read = data['read']
+        if 'rating' in data:
+            user_book.rating = data['rating']
 
         user_book.save()
 
         return Response({
             'book': user_book.book.name,
             'like': user_book.is_favorite,
-            'read': user_book.is_read
+            'read': user_book.is_read,
+            'rating': user_book.rating
         })
+
+    @action(detail=True, methods=['get', 'post'], url_path='reviews')
+    def reviews(self, request, pk=None):
+        book = self.get_object()
+
+        if request.method == 'GET':
+            reviews = Review.objects.filter(book=book)
+            serializer = ReviewSerializer(reviews, many=True)
+            return Response(serializer.data)
+
+        if request.method == 'POST':
+            if not request.user.is_authenticated:
+                return Response({'error': 'Потрібна авторизація'}, status=401)
+            if Review.objects.filter(user=request.user, book=book).exists():
+                return Response({'error': 'Ви вже залишали відгук на цю книгу'}, status=400)
+            serializer = ReviewSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=request.user, book=book)
+            return Response(serializer.data, status=201)
+
+        return Response({'error': 'Метод не дозволений'}, status=405)
 
 
 class SeriesModelViewSet(viewsets.ReadOnlyModelViewSet):
@@ -62,7 +87,7 @@ class SeriesModelViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'retrieve':
             return SeriesDetailSerializer
         return SeriesSerializer
-
+    
 
 #Відображення списку авторів в розділі "Автори" та деталі конкретного автора.
 class AuthorModelViewSet(viewsets.ReadOnlyModelViewSet):
@@ -108,6 +133,12 @@ class ReadedBooksModelViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = LibraryApiListPagination
 
 
+class SubscriptionPlanModelViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SubscriptionPlan.objects.all()
+    serializer_class = SubscriptionPlanListSerializer
+    permission_classes = [AllowAny]
+
+
 #Реалізація пошуку, шукати можна авторів та книги залежно від типу пошуку (type = ??)
 class SearchingAPIView(APIView):
     permission_classes = [AllowAny]
@@ -137,7 +168,10 @@ class SearchingAPIView(APIView):
             queryset = Author.objects.all()
             return queryset
         elif query_type == "books":
-            queryset = Book.objects.all()
+            queryset = Book.get_with_rating()
+            return queryset
+        elif query_type == "series":
+            queryset = Series.objects.all()
             return queryset
         return None
 
@@ -147,6 +181,9 @@ class SearchingAPIView(APIView):
             return serializer
         elif query_type == "books":
             serializer = BookSerializer
+            return serializer
+        elif query_type == "series":
+            serializer = SeriesSerializer
             return serializer
         return None
 
@@ -168,3 +205,17 @@ class SearchingAPIView(APIView):
         ).order_by("-similarity")
 
         return queryset
+
+
+class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = PublicProfileSerializer
+    permission_classes = [AllowAny]
+
+
+class ProfileSettingView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileSettingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

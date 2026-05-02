@@ -26,6 +26,8 @@ router.register(r'authors', AuthorModelViewSet)
 router.register(r'series', SeriesModelViewSet)
 router.register(r'favorite', FavoriteBooksModelViewSet, basename='favorite')
 router.register(r'readed', ReadedBooksModelViewSet, basename='readed')
+router.register(r'plans', SubscriptionPlanModelViewSet, basename='plans')
+router.register(r'user', ProfileViewSet, basename='user')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -34,6 +36,7 @@ urlpatterns = [
     re_path(r'^auth/', include('djoser.urls')),
     re_path(r'^auth/', include('djoser.urls.authtoken')),
     path('api/search/', SearchingAPIView.as_view(), name='search'),
+    path('api/profile/settings/', ProfileSettingView.as_view()),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
