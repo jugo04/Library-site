@@ -133,6 +133,7 @@ class ReadedBooksModelViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = LibraryApiListPagination
 
 
+#Відображення списку підписок
 class SubscriptionPlanModelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SubscriptionPlan.objects.all()
     serializer_class = SubscriptionPlanListSerializer
@@ -207,15 +208,22 @@ class SearchingAPIView(APIView):
         return queryset
 
 
+#Профіль користувача який може переглянути будь хто
 class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = PublicProfileSerializer
     permission_classes = [AllowAny]
 
 
+#Налаштування профілю в якого є доступ лише у користувача якому цей профіль належить
 class ProfileSettingView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSettingSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
         return self.request.user
+
+class AchievementViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Achievement.objects.all()
+    serializer_class = AchievementListSerializer
+    permission_classes = [IsAuthenticated]

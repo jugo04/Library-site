@@ -156,11 +156,12 @@ class PublicProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'photo', 'biography', 'achievement')
 
     def get_achievement(self, obj):
+        requests = self.context.get('request')
         achievements = UserAchievement.objects.filter(user=obj)
         return [
             {
                 'name': a.achievement.name,
-                'icon': a.achievement.icon.url if a.achievement.icon else None,
+                'icon': requests.build_absolute_uri(a.achievement.icon.url) if a.achievement.icon else None,
             }
                 for a in achievements
                 ]

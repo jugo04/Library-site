@@ -147,6 +147,7 @@ class Review(models.Model):
 
 #Досягнення користувачів
 class Achievement(models.Model):
+    code = models.CharField(max_length=100, db_index=True)
     icon = models.ImageField(upload_to='achiev_icon/')
     name = models.CharField(max_length=100, db_index=True)
     description = models.TextField()

@@ -28,6 +28,7 @@ router.register(r'favorite', FavoriteBooksModelViewSet, basename='favorite')
 router.register(r'readed', ReadedBooksModelViewSet, basename='readed')
 router.register(r'plans', SubscriptionPlanModelViewSet, basename='plans')
 router.register(r'user', ProfileViewSet, basename='user')
+router.register(r'achievement', AchievementViewSet, basename='achievement')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
