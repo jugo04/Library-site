@@ -5,17 +5,36 @@ from .models import *
 from rest_framework import generics, viewsets
 from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from .serializer import *
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db.models import Q, Avg, Count
-
+from datetime import date
 
 #Клас для пагінації сторінок
 class LibraryApiListPagination(PageNumberPagination):
     page_size = 20
     page_query_param = 'page_size'
     max_page_size = 200
+
+
+#Перевірка віку:
+class AgePermission(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        print(f'Перевірка віку: {obj.age_category}, юзер: {request.user}')
+        if obj.age_category == 0:
+            return True
+
+        if not request.user.is_authenticated:
+            return False
+
+        if not request.user.birth_date:
+            return False
+
+        today = date.today()
+        age = today.year - request.user.birth_date.year
+
+        return age >= obj.age_category
 
 
 #Відображення списку книг на головній сторінці, деталі конкретної книги та список книг залежно від жанру
@@ -25,13 +44,19 @@ class BookModelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Book.get_with_rating()
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['genre']
-    permission_classes = [AllowAny]
     pagination_class = LibraryApiListPagination
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return BookDetailSerializer
         return BookSerializer
+
+    def get_permissions(self):
+        if self.action == 'interact':
+            return [IsAuthenticated(), AgePermission()]
+        if self.action in ['retrieve', 'reviews']:
+            return [AgePermission()]
+        return [AllowAny()]
 
     @action(detail = True, methods = ['post'], permission_classes = [IsAuthenticated])
     def interact(self, request, pk=None):
