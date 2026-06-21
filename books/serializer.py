@@ -17,12 +17,25 @@ class SeriesShortSerializer(serializers.ModelSerializer):
         model = Series
         fields = ["id", "name"]
 
-
 class BookRaitingMixin:
     def get_average_rating(self, obj):
         from django.db.models import Avg
         result = obj.bookstatus_set.aggregate(avg=Avg('rating'))
         return round(result['avg'], 1) if result['avg'] else None
+
+
+class BookPurchaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookPurchase
+        fields = ('id', 'book', 'purchased_at', 'price_paid')
+        read_only_fields = ('purchased_at', 'price_paid')
+
+
+class UserSubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSubscription
+        fields = ('id', 'subscription', 'start_date', 'date_expire', 'is_active')
+        read_only_fields = ('start_date', 'date_expire', 'is_active')
 
 
 #Задаємо поля для файлу JSON з відображенням параметрів книги

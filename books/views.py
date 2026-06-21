@@ -10,12 +10,59 @@ from .serializer import *
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db.models import Q, Avg, Count
 from datetime import date
+from datetime import timedelta
+from django.utils import timezone
+
 
 #Клас для пагінації сторінок
 class LibraryApiListPagination(PageNumberPagination):
     page_size = 20
     page_query_param = 'page_size'
     max_page_size = 200
+
+
+class SubscriptionView(generics.CreateAPIView):
+    serializer_class = UserSubscriptionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request):
+        plan_id = request.data.get('plan_id')
+
+        try:
+            plan = SubscriptionPlan.objects.get(id=plan_id)
+        except SubscriptionPlan.DoesNotExist:
+            return Response({'error': 'План не знайдено'}, status=404)
+
+        subscription, created = UserSubscription.objects.update_or_create(
+            user=request.user,
+            defaults={
+                'subscription': plan,
+                'date_expire': timezone.now() + timedelta(days=plan.duration_days),
+                'is_active': True,
+                'payment_id': f'fake_payment_{request.user.id}_{plan.id}'
+            }
+        )
+
+        serializer = UserSubscriptionSerializer(subscription)
+        return Response(serializer.data, status=201)
+
+
+class UserSubscriptionStatusView(generics.RetrieveAPIView):
+    serializer_class = UserSubscriptionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        try:
+            return UserSubscription.objects.get(user=self.request.user, is_active=True)
+        except UserSubscription.DoesNotExist:
+            return None
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not instance:
+            return Response({'is_active': False})
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 #Перевірка віку:
@@ -56,6 +103,8 @@ class BookModelViewSet(viewsets.ReadOnlyModelViewSet):
             return [IsAuthenticated(), AgePermission()]
         if self.action in ['retrieve', 'reviews']:
             return [AgePermission()]
+        if self.action == 'buy':
+            return [IsAuthenticated()]
         return [AllowAny()]
 
     @action(detail = True, methods = ['post'], permission_classes = [IsAuthenticated])
@@ -102,6 +151,28 @@ class BookModelViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response({'error': 'Метод не дозволений'}, status=405)
 
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def buy(self, request, pk=None):
+        book = self.get_object()
+
+        # Перевірка чи книга має ціну
+        if not book.price:
+            return Response({'error': 'Ця книга безкоштовна'}, status=400)
+
+        # Перевірка чи вже куплена
+        if BookPurchase.objects.filter(user=request.user, book=book).exists():
+            return Response({'error': 'Ви вже придбали цю книгу'}, status=400)
+
+        # Створюємо покупку (фейкова оплата)
+        purchase = BookPurchase.objects.create(
+            user=request.user,
+            book=book,
+            price_paid=book.price,
+            payment_id='fake_payment_' + str(book.id)
+        )
+
+        serializer = BookPurchaseSerializer(purchase)
+        return Response(serializer.data, status=201)
 
 class SeriesModelViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Series.objects.all()
@@ -238,6 +309,22 @@ class ProfileViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = PublicProfileSerializer
     permission_classes = [AllowAny]
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def subscription(self, request):
+        try:
+            subscription = UserSubscription.objects.get(user=request.user, is_active=True)
+        except UserSubscription.DoesNotExist:
+            return Response({'is_active': False})
+
+        serializer = UserSubscriptionSerializer(subscription)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def purchases(self, request):
+        purchases = BookPurchase.objects.filter(user=request.user)
+        serializer = BookPurchaseSerializer(purchases, many=True)
+        return Response(serializer.data)
 
 
 #Налаштування профілю в якого є доступ лише у користувача якому цей профіль належить
